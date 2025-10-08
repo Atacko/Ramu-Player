@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ラム Player</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="main-content">
+      <div class="window file-explorer">
+        <div class="window-title">
+          FILE EXPLORER
+          <button class="shuffle-btn" id="shuffleBtn" title="Shuffle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+            </svg>
+          </button>
+        </div>
+        <div class="explorer-content" id="fileList">
+          <div style="padding: 20px; text-align: center; color: #00ffff; font-size: 20px; letter-spacing: 1px;">
+            &gt;&gt; NO FILES LOADED &lt;&lt;<br><br>
+            CLICK BELOW TO<br>
+            SELECT AUDIO FILES
+          </div>
+        </div>
+        <div class="file-input-wrapper">
+          <label for="fileInput" class="file-input-btn">
+            [ LOAD FILES ]
+          </label>
+          <input type="file" id="fileInput" accept="audio/*" multiple style="display: none;">
+          <button class="file-input-btn" id="removeFileBtn">
+            [ REMOVE FILE ]
+          </button>
+          <button class="file-input-btn" id="addRadioBtn">
+            [ ADD RADIO ]
+          </button>
+        </div>
+      </div>
+
+      <div class="window visualizer-area">
+        <div class="window-title">
+          <span>SPECTRUM ANALYZER</span>
+          <div class="title-buttons">
+            <button class="styles-btn" id="exportEqBtn">[ EXPORT EQ ]</button>
+            <button class="styles-btn" id="importEqBtn">[ IMPORT EQ ]</button>
+            <input type="file" id="importEqInput" accept=".json" style="display: none;">
+            <button class="styles-btn" id="stylesBtn">[ STYLES ]</button>
+          </div>
+        </div>
+        <div class="visualizer-content">
+          <canvas id="spectrum-canvas"></canvas>
+          <div class="no-audio-message" id="noAudioMessage">
+            &gt;&gt; AWAITING AUDIO INPUT &lt;&lt;
+          </div>
+        </div>
+      </div>
+
+      <div class="window equalizer">
+        <div class="window-title">
+          EQUALIZER
+        </div>
+        <div class="equalizer-content" id="equalizerContent">
+        </div>
+        <div class="eq-reset-wrapper">
+          <button class="eq-reset-btn" id="eqResetBtn">[ RESET ]</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-bar">
+      <div class="album-art-container">
+        <div class="album-art" id="albumArt">
+          ♪
+        </div>
+      </div>
+      
+      <div class="controls-container">
+        <div class="track-info">
+          <div class="track-name" id="trackName">NO TRACK LOADED</div>
+          <div class="track-time">
+            <span id="currentTime">00:00</span> / <span id="duration">00:00</span>
+          </div>
+        </div>
+        
+        <div class="controls-main">
+          <div class="playback-controls">
+            <button class="control-btn" id="prevBtn" disabled>«</button>
+            <button class="control-btn" id="playPauseBtn" disabled>►</button>
+            <button class="control-btn" id="nextBtn" disabled>»</button>
+          </div>
+          
+          <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+          
+          <div class="volume-container">
+            <span class="volume-icon">♫</span>
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="stylesModal">
+    <div class="modal-content">
+      <div class="modal-title">VISUALIZER STYLES</div>
+      <div class="styles-grid">
+        <button class="style-option" data-style="spectrum">SPECTRUM</button>
+        <button class="style-option" data-style="mirror">MIRROR</button>
+        <button class="style-option" data-style="wave">WAVEFORM</button>
+        <button class="style-option" data-style="galaxy">GALAXY</button>
+        <button class="style-option" data-style="retro">RETRO</button>
+        <button class="style-option" data-style="dialup">DIAL-UP</button>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn" id="closeStylesBtn">[ CLOSE ]</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="radioModal">
+    <div class="modal-content">
+      <div class="modal-title">ADD RADIO STATION</div>
+      <form class="modal-form" id="radioForm">
+        <div class="form-group">
+          <label class="form-label">STATION NAME:</label>
+          <input type="text" class="form-input" id="radioName" placeholder="Enter station name..." required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">STREAM URL:</label>
+          <input type="url" class="form-input" id="radioUrl" placeholder="Enter stream URL..." required>
+        </div>
+        <div class="modal-buttons">
+          <button type="submit" class="modal-btn">[ ADD ]</button>
+          <button type="button" class="modal-btn" id="cancelRadioBtn">[ CANCEL ]</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <audio id="audioPlayer"></audio>
+  <script src="script.js"></script>
+</body>
+</html>
