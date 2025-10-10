@@ -116,11 +116,28 @@ body::after {
   text-shadow: 0 0 8px var(--terminal-secondary);
   transition: all 0.1s;
   letter-spacing: 1px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.styles-btn:hover {
-  background: rgba(0, 255, 255, 0.1);
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+.styles-btn.icon-btn {
+  padding: 8px;
+  min-width: 36px;
+}
+
+.styles-btn svg {
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 5px currentColor);
+}
+
+.styles-btn.active {
+  border-color: #ff00ff;
+  color: #ff00ff;
+  text-shadow: 0 0 10px #ff00ff;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
 }
 
 .shuffle-btn {
@@ -142,10 +159,10 @@ body::after {
 }
 
 .shuffle-btn.active {
-  border-color: var(--terminal-secondary);
-  color: var(--terminal-secondary);
-  text-shadow: 0 0 10px var(--terminal-secondary);
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  border-color: #ff00ff;
+  color: #ff00ff;
+  text-shadow: 0 0 10px #ff00ff;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
 }
 
 .shuffle-btn svg {
@@ -308,6 +325,11 @@ body::after {
 .equalizer {
   width: 280px;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.equalizer.hidden {
+  display: none;
 }
 
 .equalizer-content {
@@ -450,7 +472,6 @@ body::after {
 }
 
 .album-art.spinning .vinyl-record {
-
 }
 
 .vinyl-record {
@@ -615,8 +636,11 @@ body::after {
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
 }
 
-.control-btn:active {
-  background: rgba(255, 0, 255, 0.2);
+.control-btn.active {
+  border-color: #ff00ff;
+  color: #ff00ff;
+  text-shadow: 0 0 10px #ff00ff;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
 }
 
 .control-btn:disabled {

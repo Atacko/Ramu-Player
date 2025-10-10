@@ -34,6 +34,11 @@ const shuffleBtn = document.getElementById("shuffleBtn")
 const exportEqBtn = document.getElementById("exportEqBtn")
 const importEqBtn = document.getElementById("importEqBtn")
 const importEqInput = document.getElementById("importEqInput")
+const fullscreenBtn = document.getElementById("fullscreenBtn")
+const styleOptions = document.querySelectorAll(".style-option")
+const plusBtn = document.getElementById("plusBtn")
+const eqToggleBtn = document.getElementById("eqToggleBtn")
+const equalizerWindow = document.querySelector(".equalizer")
 
 let audioContext
 let analyser
@@ -924,6 +929,22 @@ function drawRetro3D(dataArray, bufferLength, WIDTH, HEIGHT) {
     }
   }
 
+  function isValidPoint(point) {
+    if (!isFinite(point.x) || !isFinite(point.y)) {
+      return false
+    }
+
+    const margin = WIDTH * 2
+    if (point.x < -margin || point.x > WIDTH + margin) {
+      return false
+    }
+    if (point.y < -margin || point.y > HEIGHT + margin) {
+      return false
+    }
+
+    return true
+  }
+
   const apex = { x: 0, y: -pyramidSize, z: 0 }
   const base = [
     { x: pyramidSize, y: pyramidSize / 2, z: pyramidSize },
@@ -1551,3 +1572,32 @@ function getPreviousTrackIndex() {
     return -1
   }
 }
+
+fullscreenBtn.addEventListener("click", () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      console.error(`Error attempting to enable fullscreen: ${err.message}`)
+    })
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen()
+    }
+  }
+})
+
+document.addEventListener("fullscreenchange", () => {
+  if (document.fullscreenElement) {
+    fullscreenBtn.classList.add("active")
+  } else {
+    fullscreenBtn.classList.remove("active")
+  }
+})
+
+plusBtn.addEventListener("click", () => {
+  plusBtn.classList.toggle("active")
+})
+
+eqToggleBtn.addEventListener("click", () => {
+  equalizerWindow.classList.toggle("hidden")
+  eqToggleBtn.classList.toggle("active")
+})

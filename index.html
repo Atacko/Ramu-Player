@@ -13,11 +13,6 @@
       <div class="window file-explorer">
         <div class="window-title">
           FILE EXPLORER
-          <button class="shuffle-btn" id="shuffleBtn" title="Shuffle">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
-            </svg>
-          </button>
         </div>
         <div class="explorer-content" id="fileList">
           <div style="padding: 20px; text-align: center; color: #00ffff; font-size: 20px; letter-spacing: 1px;">
@@ -48,6 +43,17 @@
             <button class="styles-btn" id="importEqBtn">[ IMPORT EQ ]</button>
             <input type="file" id="importEqInput" accept=".json" style="display: none;">
             <button class="styles-btn" id="stylesBtn">[ STYLES ]</button>
+            <button class="styles-btn icon-btn" id="fullscreenBtn" title="Toggle Fullscreen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
+            <button class="styles-btn icon-btn" id="plusBtn" title="Add">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
           </div>
         </div>
         <div class="visualizer-content">
@@ -90,6 +96,24 @@
             <button class="control-btn" id="prevBtn" disabled>«</button>
             <button class="control-btn" id="playPauseBtn" disabled>►</button>
             <button class="control-btn" id="nextBtn" disabled>»</button>
+            <button class="control-btn" id="shuffleBtn" title="Shuffle">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+              </svg>
+            </button>
+            <button class="control-btn active" id="eqToggleBtn" title="Toggle Equalizer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="1" y1="14" x2="7" y2="14"></line>
+                <line x1="9" y1="8" x2="15" y2="8"></line>
+                <line x1="17" y1="16" x2="23" y2="16"></line>
+              </svg>
+            </button>
           </div>
           
           <div class="progress-container">
