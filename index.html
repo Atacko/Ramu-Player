@@ -25,7 +25,7 @@
           <label for="fileInput" class="file-input-btn">
             [ LOAD FILES ]
           </label>
-          <input type="file" id="fileInput" accept="audio/*" multiple style="display: none;">
+          <input type="file" id="fileInput" accept="audio/*" multiple webkitdirectory directory style="display: none;">
           <button class="file-input-btn" id="removeFileBtn">
             [ REMOVE FILE ]
           </button>
@@ -123,8 +123,22 @@
           </div>
           
           <div class="volume-container">
-            <span class="volume-icon">♫</span>
-            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+            <div class="volume-normal">
+              <span class="volume-icon">♫</span>
+              <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+            </div>
+            
+            <div class="volume-enlarged">
+              <div class="volume-buttons">
+                <button class="volume-btn" id="volumeUpBtn" title="Volume Up">+</button>
+                <button class="volume-btn" id="volumeDownBtn" title="Volume Down">−</button>
+              </div>
+              <div class="volume-indicator-container">
+                <div class="volume-indicator" id="volumeIndicator">
+                  <div class="volume-indicator-fill" id="volumeIndicatorFill"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

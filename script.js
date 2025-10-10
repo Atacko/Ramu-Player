@@ -3,6 +3,8 @@ const radioStations = []
 let currentTrackIndex = -1
 let isPlaying = false
 let isShuffleEnabled = localStorage.getItem("shuffleEnabled") === "true"
+let isEnlarged = localStorage.getItem("enlargedMode") === "true"
+let isEqVisible = localStorage.getItem("equalizerVisible") === "true"
 let shuffledIndices = []
 
 const audioPlayer = document.getElementById("audioPlayer")
@@ -17,6 +19,9 @@ const currentTimeEl = document.getElementById("currentTime")
 const durationEl = document.getElementById("duration")
 const trackNameEl = document.getElementById("trackName")
 const volumeSlider = document.getElementById("volumeSlider")
+const volumeUpBtn = document.getElementById("volumeUpBtn")
+const volumeDownBtn = document.getElementById("volumeDownBtn")
+const volumeIndicatorFill = document.getElementById("volumeIndicatorFill")
 const albumArt = document.getElementById("albumArt")
 const noAudioMessage = document.getElementById("noAudioMessage")
 const removeFileBtn = document.getElementById("removeFileBtn")
@@ -39,6 +44,7 @@ const styleOptions = document.querySelectorAll(".style-option")
 const plusBtn = document.getElementById("plusBtn")
 const eqToggleBtn = document.getElementById("eqToggleBtn")
 const equalizerWindow = document.querySelector(".equalizer")
+const container = document.querySelector(".container")
 
 let audioContext
 let analyser
@@ -144,6 +150,19 @@ if (isShuffleEnabled) {
   shuffleBtn.classList.add("active")
 }
 
+if (isEnlarged) {
+  plusBtn.classList.add("active")
+  container.classList.add("enlarged")
+}
+
+if (isEqVisible) {
+  eqToggleBtn.classList.add("active")
+  equalizerWindow.classList.remove("hidden")
+} else {
+  eqToggleBtn.classList.remove("active")
+  equalizerWindow.classList.add("hidden")
+}
+
 shuffleBtn.addEventListener("click", () => {
   isShuffleEnabled = !isShuffleEnabled
   localStorage.setItem("shuffleEnabled", isShuffleEnabled.toString())
@@ -232,7 +251,7 @@ importEqInput.addEventListener("change", (e) => {
 
 fileInput.addEventListener("change", (e) => {
   const files = Array.from(e.target.files)
-  audioFiles = files.filter((file) => file.type.startsWith("audio/"))
+  audioFiles = files.filter((file) => file.type.startsWith("audio/") || file.name.toLowerCase().endsWith(".mp3"))
 
   if (audioFiles.length > 0) {
     if (isShuffleEnabled) {
@@ -349,7 +368,17 @@ function renderFileList() {
   if (audioFiles.length > 0) {
     const filesHeader = document.createElement("div")
     filesHeader.className = "category-header"
-    filesHeader.textContent = "▼ AUDIO FILES"
+    filesHeader.textContent = "AUDIO FILES"
+    filesHeader.addEventListener("click", () => {
+      filesHeader.classList.toggle("collapsed")
+      const fileItems = filesHeader.nextElementSibling
+      let currentElement = filesHeader.nextElementSibling
+
+      while (currentElement && !currentElement.classList.contains("category-header")) {
+        currentElement.style.display = filesHeader.classList.contains("collapsed") ? "none" : "flex"
+        currentElement = currentElement.nextElementSibling
+      }
+    })
     fileList.appendChild(filesHeader)
 
     audioFiles.forEach((file, index) => {
@@ -366,7 +395,16 @@ function renderFileList() {
   if (radioStations.length > 0) {
     const radiosHeader = document.createElement("div")
     radiosHeader.className = "category-header"
-    radiosHeader.textContent = "▼ RADIO STATIONS"
+    radiosHeader.textContent = "RADIO STATIONS"
+    radiosHeader.addEventListener("click", () => {
+      radiosHeader.classList.toggle("collapsed")
+      let currentElement = radiosHeader.nextElementSibling
+
+      while (currentElement && !currentElement.classList.contains("category-header")) {
+        currentElement.style.display = radiosHeader.classList.contains("collapsed") ? "none" : "flex"
+        currentElement = currentElement.nextElementSibling
+      }
+    })
     fileList.appendChild(radiosHeader)
 
     radioStations.forEach((radio, index) => {
@@ -399,8 +437,13 @@ function loadTrack(index) {
     audioPlayer.src = radio.url
     trackNameEl.textContent = radio.name
     albumArt.innerHTML = `
-      <div class="vinyl-record"></div>
+      <div class="vinyl-record">
+        <div class="vinyl-label">
+          <img src="assets/LP.png" alt="Radio Station">
+        </div>
+      </div>
     `
+    albumArt.classList.add("default-vinyl")
   } else {
     const file = audioFiles[index]
     const url = URL.createObjectURL(file)
@@ -427,8 +470,13 @@ function loadTrack(index) {
 async function extractAlbumArt(file) {
   const albumArtEl = document.getElementById("albumArt")
   albumArtEl.innerHTML = `
-    <div class="vinyl-record"></div>
+    <div class="vinyl-record">
+      <div class="vinyl-label">
+        <img src="assets/LP.png" alt="Default Vinyl">
+      </div>
+    </div>
   `
+  albumArtEl.classList.add("default-vinyl")
   albumArtEl.classList.remove("spinning")
 
   if (typeof window.jsmediatags === "undefined") {
@@ -453,6 +501,7 @@ async function extractAlbumArt(file) {
             </div>
           </div>
         `
+        albumArtEl.classList.remove("default-vinyl")
 
         if (isPlaying) {
           albumArtEl.classList.add("spinning")
@@ -654,12 +703,6 @@ function updateProgressFromMouse(e) {
   }
 }
 
-// progressBar.addEventListener("click", (e) => {
-//   const rect = progressBar.getBoundingClientRect()
-//   const percent = (e.clientX - rect.left) / rect.width
-//   audioPlayer.currentTime = percent * audioPlayer.duration
-// })
-
 audioPlayer.addEventListener("timeupdate", () => {
   const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100
   progressFill.style.width = `${progress}%`
@@ -678,9 +721,45 @@ volumeSlider.addEventListener("input", (e) => {
   if (gainNode) {
     gainNode.gain.value = volume
   }
+
+  updateVolumeIndicator(e.target.value)
 })
 
-audioPlayer.volume = 0.7
+volumeUpBtn.addEventListener("click", () => {
+  const currentVolume = Number.parseInt(volumeSlider.value)
+  const newVolume = Math.min(100, currentVolume + 5)
+  volumeSlider.value = newVolume
+
+  const volume = newVolume / 100
+  audioPlayer.volume = volume
+
+  if (gainNode) {
+    gainNode.gain.value = volume
+  }
+
+  updateVolumeIndicator(newVolume)
+})
+
+volumeDownBtn.addEventListener("click", () => {
+  const currentVolume = Number.parseInt(volumeSlider.value)
+  const newVolume = Math.max(0, currentVolume - 5)
+  volumeSlider.value = newVolume
+
+  const volume = newVolume / 100
+  audioPlayer.volume = volume
+
+  if (gainNode) {
+    gainNode.gain.value = volume
+  }
+
+  updateVolumeIndicator(newVolume)
+})
+
+function updateVolumeIndicator(volumeValue) {
+  if (volumeIndicatorFill) {
+    volumeIndicatorFill.style.height = `${volumeValue}%`
+  }
+}
 
 function formatTime(seconds) {
   if (isNaN(seconds)) return "00:00"
@@ -1594,10 +1673,29 @@ document.addEventListener("fullscreenchange", () => {
 })
 
 plusBtn.addEventListener("click", () => {
-  plusBtn.classList.toggle("active")
+  isEnlarged = !isEnlarged
+  localStorage.setItem("enlargedMode", isEnlarged.toString())
+
+  if (isEnlarged) {
+    plusBtn.classList.add("active")
+    container.classList.add("enlarged")
+  } else {
+    plusBtn.classList.remove("active")
+    container.classList.remove("enlarged")
+  }
 })
 
 eqToggleBtn.addEventListener("click", () => {
-  equalizerWindow.classList.toggle("hidden")
-  eqToggleBtn.classList.toggle("active")
+  isEqVisible = !isEqVisible
+  localStorage.setItem("equalizerVisible", isEqVisible.toString())
+
+  if (isEqVisible) {
+    equalizerWindow.classList.remove("hidden")
+    eqToggleBtn.classList.add("active")
+  } else {
+    equalizerWindow.classList.add("hidden")
+    eqToggleBtn.classList.remove("active")
+  }
 })
+
+updateVolumeIndicator(70)(70)
