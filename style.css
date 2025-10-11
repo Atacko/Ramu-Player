@@ -17,7 +17,7 @@
   --terminal-shadow: #000000;
   --text-primary: #00ffff;
   --text-dim: #8000ff;
-  --text-accent: #ff00ff;
+  /*--text-accent: #ff00ff;*/
 }
 
 body {
