@@ -256,9 +256,12 @@ fileInput.addEventListener("change", (e) => {
   if (audioFiles.length > 0) {
     if (isShuffleEnabled) {
       generateShuffledIndices()
+      renderFileList()
+      loadTrack(shuffledIndices[0])
+    } else {
+      renderFileList()
+      loadTrack(0)
     }
-    renderFileList()
-    loadTrack(0)
   }
 })
 
@@ -1698,4 +1701,13 @@ eqToggleBtn.addEventListener("click", () => {
   }
 })
 
-updateVolumeIndicator(70)(70)
+updateVolumeIndicator(70)
+
+//Preloaded Radio Taco
+radioStations.push({
+  name: "Radio Taco",
+  url: "https://radiosource.atacko.cc/radio.mp3",
+})
+
+renderFileList()
+loadTrack(0)
