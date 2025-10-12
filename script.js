@@ -58,6 +58,10 @@ const canvasCtx = canvas.getContext("2d")
 
 let jsmediatags
 
+audioPlayer.volume = 0.75;
+
+volumeSlider.value = 75;
+
 function initAudioContext() {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)()
