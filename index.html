@@ -14,12 +14,7 @@
         <div class="window-title">
           FILE EXPLORER
         </div>
-        <div class="explorer-content" id="fileList">
-          <div style="padding: 20px; text-align: center; color: #00ffff; font-size: 20px; letter-spacing: 1px;">
-            &gt;&gt; NO FILES LOADED &lt;&lt;<br><br>
-            CLICK BELOW TO<br>
-            SELECT AUDIO FILES
-          </div>
+        <div class="explorer-content" id="fileList">  
         </div>
         <div class="file-input-wrapper">
           <label for="fileInput" class="file-input-btn">
@@ -101,6 +96,14 @@
                 <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
               </svg>
             </button>
+            <button class="control-btn" id="repeatBtn" title="Repeat">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 1l4 4-4 4"/>
+                <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                <path d="M7 23l-4-4 4-4"/>
+                <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+              </svg>
+            </button>
             <button class="control-btn active" id="eqToggleBtn" title="Toggle Equalizer">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="4" y1="21" x2="4" y2="14"></line>
@@ -124,7 +127,7 @@
           
           <div class="volume-container">
             <div class="volume-normal">
-              <span class="volume-icon">♫</span>
+              <span class="volume-icon">🔊︎</span>
               <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
             </div>
             
@@ -158,6 +161,20 @@
       </div>
       <div class="modal-buttons">
         <button class="modal-btn" id="closeStylesBtn">[ CLOSE ]</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="repeatModal">
+    <div class="modal-content">
+      <div class="modal-title">REPEAT MODE</div>
+      <div class="styles-grid">
+        <button class="style-option" data-repeat="off">OFF</button>
+        <button class="style-option" data-repeat="track">REPEAT TRACK</button>
+        <button class="style-option" data-repeat="playlist">REPEAT PLAYLIST</button>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn" id="closeRepeatBtn">[ CLOSE ]</button>
       </div>
     </div>
   </div>

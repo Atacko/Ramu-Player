@@ -3,9 +3,11 @@ const radioStations = []
 let currentTrackIndex = -1
 let isPlaying = false
 let isShuffleEnabled = localStorage.getItem("shuffleEnabled") === "true"
+let repeatMode = localStorage.getItem("repeatMode") || "off"
 let isEnlarged = localStorage.getItem("enlargedMode") === "true"
 let isEqVisible = localStorage.getItem("equalizerVisible") === "true"
 let shuffledIndices = []
+let currentShuffleIndex = 0
 
 const audioPlayer = document.getElementById("audioPlayer")
 const fileInput = document.getElementById("fileInput")
@@ -34,6 +36,9 @@ const radioUrlInput = document.getElementById("radioUrl")
 const stylesBtn = document.getElementById("stylesBtn")
 const stylesModal = document.getElementById("stylesModal")
 const closeStylesBtn = document.getElementById("closeStylesBtn")
+const repeatBtn = document.getElementById("repeatBtn")
+const repeatModal = document.getElementById("repeatModal")
+const closeRepeatBtn = document.getElementById("closeRepeatBtn")
 const eqResetBtn = document.getElementById("eqResetBtn")
 const shuffleBtn = document.getElementById("shuffleBtn")
 const exportEqBtn = document.getElementById("exportEqBtn")
@@ -58,9 +63,9 @@ const canvasCtx = canvas.getContext("2d")
 
 let jsmediatags
 
-audioPlayer.volume = 0.75;
+audioPlayer.volume = 0.75
 
-volumeSlider.value = 75;
+volumeSlider.value = 75
 
 function initAudioContext() {
   if (!audioContext) {
@@ -154,6 +159,8 @@ if (isShuffleEnabled) {
   shuffleBtn.classList.add("active")
 }
 
+updateRepeatButtonState()
+
 if (isEnlarged) {
   plusBtn.classList.add("active")
   container.classList.add("enlarged")
@@ -173,21 +180,95 @@ shuffleBtn.addEventListener("click", () => {
 
   if (isShuffleEnabled) {
     shuffleBtn.classList.add("active")
-    generateShuffledIndices()
+    if (currentTrackIndex !== -1) {
+      generateShuffledIndices()
+      const currentIndex = shuffledIndices.indexOf(currentTrackIndex)
+      if (currentIndex > 0) {
+        shuffledIndices.splice(currentIndex, 1)
+        shuffledIndices.unshift(currentTrackIndex)
+      }
+      currentShuffleIndex = 0
+    }
   } else {
     shuffleBtn.classList.remove("active")
     shuffledIndices = []
+    currentShuffleIndex = 0
   }
 })
 
-function generateShuffledIndices() {
-  const totalTracks = audioFiles.length + radioStations.length
-  shuffledIndices = Array.from({ length: totalTracks }, (_, i) => i)
+repeatBtn.addEventListener("click", () => {
+  repeatModal.classList.add("active")
+  updateActiveRepeatOption()
+})
 
-  for (let i = shuffledIndices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]]
+closeRepeatBtn.addEventListener("click", () => {
+  repeatModal.classList.remove("active")
+})
+
+repeatModal.addEventListener("click", (e) => {
+  if (e.target === repeatModal) {
+    repeatModal.classList.remove("active")
   }
+})
+
+document.querySelectorAll("#repeatModal .style-option").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    repeatMode = btn.dataset.repeat
+    localStorage.setItem("repeatMode", repeatMode)
+    updateActiveRepeatOption()
+    updateRepeatButtonState()
+
+    if (currentTrackIndex !== -1 && isShuffleEnabled) {
+      generateShuffledIndices()
+      const currentIndex = shuffledIndices.indexOf(currentTrackIndex)
+      if (currentIndex > 0) {
+        shuffledIndices.splice(currentIndex, 1)
+        shuffledIndices.unshift(currentTrackIndex)
+      }
+      currentShuffleIndex = 0
+    }
+  })
+})
+
+function updateActiveRepeatOption() {
+  document.querySelectorAll("#repeatModal .style-option").forEach((btn) => {
+    if (btn.dataset.repeat === repeatMode) {
+      btn.classList.add("active")
+    } else {
+      btn.classList.remove("active")
+    }
+  })
+}
+
+function updateRepeatButtonState() {
+  if (repeatMode === "off") {
+    repeatBtn.classList.remove("active")
+  } else {
+    repeatBtn.classList.add("active")
+  }
+}
+
+function generateShuffledIndices() {
+  const isCurrentRadio = currentTrackIndex >= audioFiles.length
+
+  if (isCurrentRadio) {
+    const radioIndices = Array.from({ length: radioStations.length }, (_, i) => audioFiles.length + i)
+    shuffledIndices = radioIndices
+
+    for (let i = shuffledIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]]
+    }
+  } else {
+    shuffledIndices = Array.from({ length: audioFiles.length }, (_, i) => i)
+
+    for (let i = shuffledIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]]
+    }
+  }
+
+  currentShuffleIndex = 0
 }
 
 exportEqBtn.addEventListener("click", () => {
@@ -281,6 +362,11 @@ removeFileBtn.addEventListener("click", () => {
     audioFiles.splice(currentTrackIndex, 1)
   }
 
+  if (isShuffleEnabled) {
+    const originalIndex = currentTrackIndex
+    const removedIsRadio = originalIndex >= audioFiles.length
+  }
+
   if (audioFiles.length === 0 && radioStations.length === 0) {
     currentTrackIndex = -1
     audioPlayer.pause()
@@ -293,8 +379,9 @@ removeFileBtn.addEventListener("click", () => {
     isPlaying = false
     playPauseBtn.textContent = "►"
   } else {
-    if (currentTrackIndex >= audioFiles.length + radioStations.length) {
-      currentTrackIndex = audioFiles.length + radioStations.length - 1
+    const totalTracks = audioFiles.length + radioStations.length
+    if (currentTrackIndex >= totalTracks) {
+      currentTrackIndex = totalTracks - 1
     }
     loadTrack(currentTrackIndex)
   }
@@ -325,6 +412,15 @@ radioForm.addEventListener("submit", (e) => {
 
     if (currentTrackIndex === -1) {
       loadTrack(audioFiles.length)
+    } else {
+      if (isShuffleEnabled) {
+        generateShuffledIndices()
+        currentTrackIndex = shuffledIndices.indexOf(currentTrackIndex)
+        if (currentTrackIndex === -1) {
+          currentTrackIndex = 0
+        }
+        loadTrack(currentTrackIndex)
+      }
     }
   }
 })
@@ -351,7 +447,7 @@ stylesModal.addEventListener("click", (e) => {
   }
 })
 
-document.querySelectorAll(".style-option").forEach((btn) => {
+document.querySelectorAll("#stylesModal .style-option").forEach((btn) => {
   btn.addEventListener("click", () => {
     currentVisualizerStyle = btn.dataset.style
     localStorage.setItem("visualizerStyle", currentVisualizerStyle)
@@ -360,7 +456,7 @@ document.querySelectorAll(".style-option").forEach((btn) => {
 })
 
 function updateActiveStyle() {
-  document.querySelectorAll(".style-option").forEach((btn) => {
+  document.querySelectorAll("#stylesModal .style-option").forEach((btn) => {
     if (btn.dataset.style === currentVisualizerStyle) {
       btn.classList.add("active")
     } else {
@@ -432,8 +528,30 @@ function loadTrack(index) {
   const totalTracks = audioFiles.length + radioStations.length
   if (index < 0 || index >= totalTracks) return
 
-  currentTrackIndex = index
+  const wasRadio = currentTrackIndex >= audioFiles.length
   const isRadio = index >= audioFiles.length
+  const switchedCategory = currentTrackIndex !== -1 && wasRadio !== isRadio
+
+  currentTrackIndex = index
+
+  if (isShuffleEnabled && switchedCategory) {
+    generateShuffledIndices()
+    currentShuffleIndex = shuffledIndices.indexOf(index)
+    if (currentShuffleIndex === -1) {
+      currentShuffleIndex = 0
+    }
+  } else if (isShuffleEnabled && shuffledIndices.length === 0) {
+    generateShuffledIndices()
+    currentShuffleIndex = shuffledIndices.indexOf(index)
+    if (currentShuffleIndex === -1) {
+      currentShuffleIndex = 0
+    }
+  } else if (isShuffleEnabled && shuffledIndices.length > 0) {
+    currentShuffleIndex = shuffledIndices.indexOf(index)
+    if (currentShuffleIndex === -1) {
+      currentShuffleIndex = 0
+    }
+  }
 
   progressFill.style.width = "0%"
   currentTimeEl.textContent = "00:00"
@@ -460,8 +578,8 @@ function loadTrack(index) {
   }
 
   playPauseBtn.disabled = false
-  prevBtn.disabled = index === 0
-  nextBtn.disabled = index === totalTracks - 1
+  prevBtn.disabled = false
+  nextBtn.disabled = false
 
   updateActiveFile()
 
@@ -547,34 +665,39 @@ playPauseBtn.addEventListener("click", () => {
 })
 
 prevBtn.addEventListener("click", () => {
-  const isCurrentRadio = currentTrackIndex >= audioFiles.length
   let prevIndex = -1
+  const isCurrentRadio = currentTrackIndex >= audioFiles.length
 
   if (isShuffleEnabled) {
     if (shuffledIndices.length === 0) {
       generateShuffledIndices()
     }
 
-    const currentShufflePos = shuffledIndices.indexOf(currentTrackIndex)
-
-    for (let i = currentShufflePos - 1; i >= 0; i--) {
-      const candidateIndex = shuffledIndices[i]
-      const candidateIsRadio = candidateIndex >= audioFiles.length
-
-      if (candidateIsRadio === isCurrentRadio) {
-        prevIndex = candidateIndex
-        break
-      }
+    if (currentShuffleIndex > 0) {
+      currentShuffleIndex--
+      prevIndex = shuffledIndices[currentShuffleIndex]
+    } else if (repeatMode === "playlist") {
+      currentShuffleIndex = shuffledIndices.length - 1
+      prevIndex = shuffledIndices[currentShuffleIndex]
+    } else {
+      prevIndex = currentTrackIndex
     }
   } else {
     if (isCurrentRadio) {
-      const radioIndex = currentTrackIndex - audioFiles.length
-      if (radioIndex > 0) {
+      if (currentTrackIndex > audioFiles.length) {
         prevIndex = currentTrackIndex - 1
+      } else if (repeatMode === "playlist") {
+        prevIndex = audioFiles.length + radioStations.length - 1
+      } else {
+        prevIndex = currentTrackIndex
       }
     } else {
       if (currentTrackIndex > 0) {
         prevIndex = currentTrackIndex - 1
+      } else if (repeatMode === "playlist") {
+        prevIndex = audioFiles.length - 1
+      } else {
+        prevIndex = currentTrackIndex
       }
     }
   }
@@ -588,81 +711,91 @@ prevBtn.addEventListener("click", () => {
 })
 
 nextBtn.addEventListener("click", () => {
-  const isCurrentRadio = currentTrackIndex >= audioFiles.length
   let nextIndex = -1
+  const isCurrentRadio = currentTrackIndex >= audioFiles.length
 
   if (isShuffleEnabled) {
     if (shuffledIndices.length === 0) {
       generateShuffledIndices()
     }
 
-    const currentShufflePos = shuffledIndices.indexOf(currentTrackIndex)
-
-    for (let i = currentShufflePos + 1; i < shuffledIndices.length; i++) {
-      const candidateIndex = shuffledIndices[i]
-      const candidateIsRadio = candidateIndex >= audioFiles.length
-
-      if (candidateIsRadio === isCurrentRadio) {
-        nextIndex = candidateIndex
-        break
-      }
+    if (currentShuffleIndex < shuffledIndices.length - 1) {
+      currentShuffleIndex++
+      nextIndex = shuffledIndices[currentShuffleIndex]
+    } else if (repeatMode === "playlist") {
+      generateShuffledIndices()
+      currentShuffleIndex = 0
+      nextIndex = shuffledIndices[0]
+    } else {
+      nextIndex = currentTrackIndex
     }
   } else {
     if (isCurrentRadio) {
-      const radioIndex = currentTrackIndex - audioFiles.length
-      if (radioIndex < radioStations.length - 1) {
+      const lastRadioIndex = audioFiles.length + radioStations.length - 1
+      if (currentTrackIndex < lastRadioIndex) {
         nextIndex = currentTrackIndex + 1
+      } else if (repeatMode === "playlist") {
+        nextIndex = audioFiles.length
+      } else {
+        nextIndex = currentTrackIndex
       }
     } else {
       if (currentTrackIndex < audioFiles.length - 1) {
         nextIndex = currentTrackIndex + 1
+      } else if (repeatMode === "playlist") {
+        nextIndex = 0
+      } else {
+        nextIndex = currentTrackIndex
       }
     }
   }
-
-  const albumArtEl = document.getElementById("albumArt")
 
   if (nextIndex >= 0) {
     loadTrack(nextIndex)
     if (isPlaying) {
       audioPlayer.play()
     }
-  } else {
-    playPauseBtn.textContent = "►"
-    isPlaying = false
-    albumArtEl.classList.remove("spinning")
   }
 })
 
 audioPlayer.addEventListener("ended", () => {
-  const isCurrentRadio = currentTrackIndex >= audioFiles.length
+  if (repeatMode === "track") {
+    audioPlayer.currentTime = 0
+    audioPlayer.play()
+    return
+  }
+
   let nextIndex = -1
+  const isCurrentRadio = currentTrackIndex >= audioFiles.length
 
   if (isShuffleEnabled) {
     if (shuffledIndices.length === 0) {
       generateShuffledIndices()
     }
 
-    const currentShufflePos = shuffledIndices.indexOf(currentTrackIndex)
-
-    for (let i = currentShufflePos + 1; i < shuffledIndices.length; i++) {
-      const candidateIndex = shuffledIndices[i]
-      const candidateIsRadio = candidateIndex >= audioFiles.length
-
-      if (candidateIsRadio === isCurrentRadio) {
-        nextIndex = candidateIndex
-        break
+    if (currentShuffleIndex < shuffledIndices.length - 1) {
+      currentShuffleIndex++
+      nextIndex = shuffledIndices[currentShuffleIndex]
+    } else {
+      if (repeatMode === "playlist") {
+        generateShuffledIndices()
+        currentShuffleIndex = 0
+        nextIndex = shuffledIndices[0]
       }
     }
   } else {
     if (isCurrentRadio) {
-      const radioIndex = currentTrackIndex - audioFiles.length
-      if (radioIndex < radioStations.length - 1) {
+      const lastRadioIndex = audioFiles.length + radioStations.length - 1
+      if (currentTrackIndex < lastRadioIndex) {
         nextIndex = currentTrackIndex + 1
+      } else if (repeatMode === "playlist") {
+        nextIndex = audioFiles.length
       }
     } else {
       if (currentTrackIndex < audioFiles.length - 1) {
         nextIndex = currentTrackIndex + 1
+      } else if (repeatMode === "playlist") {
+        nextIndex = 0
       }
     }
   }
