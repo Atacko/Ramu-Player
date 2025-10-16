@@ -468,21 +468,16 @@ function updateActiveStyle() {
 function renderFileList() {
   fileList.innerHTML = ""
 
-  if (audioFiles.length > 0) {
-    const filesHeader = document.createElement("div")
-    filesHeader.className = "category-header"
-    filesHeader.textContent = "AUDIO FILES"
-    filesHeader.addEventListener("click", () => {
-      filesHeader.classList.toggle("collapsed")
-      const fileItems = filesHeader.nextElementSibling
-      let currentElement = filesHeader.nextElementSibling
+  const audioFileCount = audioFiles.filter((file) => !file.isRadio).length
 
-      while (currentElement && !currentElement.classList.contains("category-header")) {
-        currentElement.style.display = filesHeader.classList.contains("collapsed") ? "none" : "flex"
-        currentElement = currentElement.nextElementSibling
-      }
+  if (audioFiles.length > 0) {
+    const audioHeader = document.createElement("div")
+    audioHeader.className = "category-header"
+    audioHeader.textContent = `AUDIO FILES ( ${audioFileCount} )`
+    audioHeader.addEventListener("click", () => {
+      audioHeader.classList.toggle("collapsed")
     })
-    fileList.appendChild(filesHeader)
+    fileList.appendChild(audioHeader)
 
     audioFiles.forEach((file, index) => {
       const fileItem = document.createElement("div")
@@ -510,17 +505,19 @@ function renderFileList() {
     })
     fileList.appendChild(radiosHeader)
 
-    radioStations.forEach((radio, index) => {
-      const fileItem = document.createElement("div")
-      fileItem.className = "file-item radio"
-      fileItem.textContent = radio.name
-      fileItem.addEventListener("click", () => {
-        loadTrack(audioFiles.length + index)
-      })
-      fileList.appendChild(fileItem)
+    radioStations.forEach((station, index) => {
+      const item = document.createElement("div")
+      item.className = "file-item radio"
+      if (currentTrackIndex === audioFiles.length + index) {
+        item.classList.add("active")
+      }
+      item.textContent = station.name
+      item.addEventListener("click", () => playRadio(index))
+      fileList.appendChild(item)
     })
+  } else {
+    fileList.innerHTML = '<div style="padding: 12px; color: var(--text-dim);">NO FILES LOADED</div>'
   }
-
   updateActiveFile()
 }
 
@@ -1848,3 +1845,11 @@ radioStations.push({
 
 renderFileList()
 loadTrack(0)
+
+function playRadio(index) {
+  const radioIndex = audioFiles.length + index
+  loadTrack(radioIndex)
+  if (isPlaying) {
+    audioPlayer.play()
+  }
+}
